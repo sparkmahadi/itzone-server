@@ -18,6 +18,8 @@ const run = async () => {
   try {
     const db = client.db("itzone");
     const productCollection = db.collection("products");
+    const userCollection = db.collection("users");
+    const orderCollection = db.collection("orders");
 
     app.get("/products", async (req, res) => {
       const query = {};
@@ -78,6 +80,47 @@ const run = async () => {
 
       res.send(result);
     })
+
+    app.get("/user/:mobile", async (req, res) => {
+      const mobile = req.params.mobile;
+      console.log(mobile);
+      const query = { mobile: mobile };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    })
+
+    app.post("/user", async (req, res) => {
+      const user = req.body;
+      // console.log(user);
+
+      const query = { mobile: user.mobile };
+      const exist = await userCollection.findOne(query);
+      console.log(exist);
+      if (!exist) {
+        const result = await userCollection.insertOne(user);
+        res.send(result);
+      }
+      else {
+        res.status(403).send({ message: 'user exists already' });
+      }
+    })
+
+    app.get("/orders/:mobile", async (req, res) => {
+      const mobile = req.params.mobile;
+      console.log(mobile);
+      const query = { customerMobile: mobile };
+      const result = await orderCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    app.post("/orders", async (req, res) => {
+      const order = req.body;
+      console.log(order);
+      const result = await orderCollection.insertOne(order);
+      res.send(result);
+    })
+
+
   } finally {
   }
 };
